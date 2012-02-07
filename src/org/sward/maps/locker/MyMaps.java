@@ -18,6 +18,7 @@ import com.google.android.maps.Overlay;
 import com.google.android.maps.OverlayItem;
 import com.google.android.maps.Projection;
 
+import android.util.Log;
 import android.view.*;
 
 public class MyMaps extends MapActivity {
@@ -26,7 +27,7 @@ public class MyMaps extends MapActivity {
 //	private MapView mapView;
 	private LocationManager locationManager;
 	private MyCustomMapView mapView;
-	public HelloItemizedOverlay itemizedoverlay;
+	static public HelloItemizedOverlay itemizedoverlay;
 	
 	public void onCreate(Bundle bundle) {
 		super.onCreate(bundle);
@@ -99,7 +100,8 @@ public class MyMaps extends MapActivity {
             }
             addressString = sb.toString();
         } catch (java.io.IOException e) {
-        }
+        	Log.d("GeoCoder", ""+e);
+        	}
         
         OverlayItem overlayitem2 = new OverlayItem(geoPoint, "Sekai, konichiwa!", addressString);
 		itemizedoverlay.addOverlay(overlayitem2);
@@ -116,7 +118,6 @@ public class MyMaps extends MapActivity {
 
 	public class GeoUpdateHandler implements LocationListener {
 
-		@Override
 		public void onLocationChanged(Location location) {
 			int lat = (int) (location.getLatitude() * 1E6);
 			int lng = (int) (location.getLongitude() * 1E6);
@@ -124,15 +125,12 @@ public class MyMaps extends MapActivity {
 			mapController.animateTo(point); //	mapController.setCenter(point);
 		}
 
-		@Override
 		public void onProviderDisabled(String provider) {
 		}
 
-		@Override
 		public void onProviderEnabled(String provider) {
 		}
 
-		@Override
 		public void onStatusChanged(String provider, int status, Bundle extras) {
 		}
 	}

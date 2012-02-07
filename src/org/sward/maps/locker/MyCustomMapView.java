@@ -23,7 +23,7 @@ public interface OnLongpressListener {
 /**
  * Time in ms before the OnLongpressListener is triggered.
  */
-static final int LONGPRESS_THRESHOLD = 500;
+static final int LONGPRESS_THRESHOLD = 1000;
 
 /**
  * Keep a record of the center of the map, to know if the map

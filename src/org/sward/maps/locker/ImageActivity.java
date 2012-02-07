@@ -1,6 +1,15 @@
 package org.sward.maps.locker;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.net.URI;
+
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.FileEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.*;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -10,6 +19,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.View;
 import android.widget.*;
 import android.database.Cursor;
@@ -17,12 +27,17 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
 public class ImageActivity extends Activity {
-
+	
+	private HttpPost post; 
 	private Uri mImageCaptureUri;
 	private ImageView mImageView;	
-	
+	public String path		= "";
+	public int index=0;
 	private static final int PICK_FROM_CAMERA = 1;
 	private static final int PICK_FROM_FILE = 2;
+	private static final String TAG = "IMAGE";
+	private static final String FILENAME_STR = "FILE";
+	private Bitmap bitmap 	= null;
 	
 	private EditText text1;
 	
@@ -39,6 +54,37 @@ public class ImageActivity extends Activity {
 		}
 		String value1 = extras.getString("title");
 		String value2 = extras.getString("snippet");
+		String indexS = extras.getString("index");
+		mImageView = (ImageView) findViewById(R.id.iv_pic);//To initialize ImageView
+		//Free up space we need to load the Bitmap ahead
+		Runtime.getRuntime().gc();
+		
+		if(indexS!=null)
+			index=Integer.parseInt(indexS);
+		
+		String pathE = extras.getString("path");
+		if(pathE!=null&&pathE.equals(""))
+			path=pathE;
+		
+		try{
+		path=MyMaps.itemizedoverlay.pOverlays.get(index);
+		
+		Log.d(TAG, ""+path+":"+index);
+		
+		if(!path.equals(""))
+		{			
+			//We have a previous image, load it
+			bitmap 	= BitmapFactory.decodeFile(path);
+			mImageView.setImageBitmap(bitmap);	
+		}
+		//End here
+		}
+		catch(Exception e)
+		{
+			Log.d(TAG, "E"+e);
+			Log.d(TAG, ""+path);
+		}
+		
 		if (value1 != null && value2 != null) {
 			text1 = (EditText) findViewById(R.id.editText1);
 			EditText text2 = (EditText) findViewById(R.id.editText2);
@@ -83,10 +129,9 @@ public class ImageActivity extends Activity {
 		
 		final AlertDialog dialog = builder.create();
 		
-		mImageView = (ImageView) findViewById(R.id.iv_pic);
+		
 		
 		((Button) findViewById(R.id.btn_choose)).setOnClickListener(new View.OnClickListener() {			
-			@Override
 			public void onClick(View v) {
 				dialog.show();
 			}
@@ -96,21 +141,29 @@ public class ImageActivity extends Activity {
 		
 		
 	}
+	
+	public void amClicked(View view) {
+		
+		this.doUpload(path, "IMAGE"+path.hashCode()/100000+".jpg");
+	}
 
 	
-	public void onClick(View view) {
+	public void myFinish(View view) {
+		//Reduce the Bitmap load thingy
+		bitmap.recycle();
+		Runtime.getRuntime().gc();
 		finish();
 	}
 
 	  @Override
 		protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		    if (resultCode != RESULT_OK) return;
-		   
-			Bitmap bitmap 	= null;
-			String path		= "";
+		   		
+			
 			
 			if (requestCode == PICK_FROM_FILE) {
 				mImageCaptureUri = data.getData(); 
+				
 				path = getRealPathFromURI(mImageCaptureUri); //from Gallery 
 			
 				if (path == null)
@@ -119,10 +172,15 @@ public class ImageActivity extends Activity {
 				if (path != null) 
 					bitmap 	= BitmapFactory.decodeFile(path);
 			} else {
+				
 				path	= mImageCaptureUri.getPath();
 				bitmap  = BitmapFactory.decodeFile(path);
 			}
-				
+			
+			MyMaps.itemizedoverlay.pOverlays.set(index, path);
+		    String temp=MyMaps.itemizedoverlay.pOverlays.get(index);
+			
+			Log.d(TAG, "Added"+temp);
 			mImageView.setImageBitmap(bitmap);		
 		}
 		
@@ -138,4 +196,62 @@ public class ImageActivity extends Activity {
 
 	        return cursor.getString(column_index);
 		}
+		
+		@Override
+		public void finish() {
+			// Prepare data intent 
+			Intent data = new Intent();
+			data.putExtra("returnKey1", "Swinging on a star. ");
+			data.putExtra("returnKey2", "You could be better then you are. ");
+			// Activity finished ok, return the data
+			setResult(RESULT_OK, data);
+			super.finish();
+		}
+
+		
+		public void doUpload(String filepath,String filename) { 
+            HttpClient httpClient = new DefaultHttpClient(); 
+            try { 
+                    httpClient.getParams().setParameter("http.socket.timeout", new Integer(90000)); // 90 second 
+                    post = new HttpPost(new URI("http://219.91.152.192:8080/Locker_WMS/recieve.jsp")); 
+                    File file = new File(filepath); 
+                    Log.d(TAG,file.getName());
+                    FileEntity entity; 
+                    if (filepath.substring(filepath.length()-3, filepath.length 
+()).equalsIgnoreCase("txt") || 
+                            filepath.substring(filepath.length()-3, filepath.length 
+()).equalsIgnoreCase("log")) { 
+                            entity = new FileEntity(file,"text/plain; charset=\"UTF-8\""); 
+                            entity.setChunked(true); 
+                    }else { 
+                            entity = new FileEntity(file,"binary/octet-stream"); 
+                            entity.setChunked(true); 
+                    } 
+                    post.setEntity(entity); 
+                    post.addHeader(FILENAME_STR, filename); 
+
+                    HttpResponse response = httpClient.execute(post); 
+                    if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) { 
+                            Log.e(TAG,"--------Error--------Response Status line code:"+response.getStatusLine()); 
+                    }else { 
+                            // Here every thing is fine. 
+                    } 
+                    HttpEntity resEntity = response.getEntity(); 
+                    if (resEntity == null) { 
+                            Log.e(TAG,"---------Error No Response !!!-----"); 
+                    }else{
+                    	Log.e("RESP",""+response.getStatusLine());
+                    } 
+                    
+            } catch (Exception ex) { 
+                    Log.e(TAG,"---------Error-----"+ex.getMessage()); 
+                    ex.printStackTrace(); 
+            } finally { 
+                      httpClient.getConnectionManager().shutdown(); 
+            } 
+            
+            Log.d(TAG, "File Uploaded");
+    }
+		
+		
 }
