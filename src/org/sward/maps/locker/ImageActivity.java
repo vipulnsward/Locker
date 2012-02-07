@@ -11,6 +11,8 @@ import org.apache.http.entity.FileEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.*;
 
+import com.google.android.maps.OverlayItem;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -40,7 +42,7 @@ public class ImageActivity extends Activity {
 	private Bitmap bitmap 	= null;
 	
 	private EditText text1;
-	
+	private EditText text2;
 /** Called when the activity is first created. */
 
 	
@@ -87,7 +89,7 @@ public class ImageActivity extends Activity {
 		
 		if (value1 != null && value2 != null) {
 			text1 = (EditText) findViewById(R.id.editText1);
-			EditText text2 = (EditText) findViewById(R.id.editText2);
+			text2 = (EditText) findViewById(R.id.editText2);
 			text1.setText(value1);
 			text2.setText(value2);
 		}
@@ -229,7 +231,13 @@ public class ImageActivity extends Activity {
                     } 
                     post.setEntity(entity); 
                     post.addHeader(FILENAME_STR, filename); 
-
+                    post.addHeader("SNIPPET", text2.getText().toString() );
+                    post.addHeader("TITLE", text1.getText().toString());
+                    
+                    OverlayItem item= MyMaps.itemizedoverlay.mOverlays.get(index);
+                    post.addHeader("LAT",item.getPoint().getLatitudeE6()+"");
+                    post.addHeader("LONG",item.getPoint().getLongitudeE6()+"");
+                    
                     HttpResponse response = httpClient.execute(post); 
                     if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) { 
                             Log.e(TAG,"--------Error--------Response Status line code:"+response.getStatusLine()); 

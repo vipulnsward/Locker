@@ -10,7 +10,7 @@ import android.widget.*;
 
 public class HelloItemizedOverlay extends ItemizedOverlay{
 	private int IMG_COUNT=1;	
-	private ArrayList<OverlayItem> mOverlays = new ArrayList<OverlayItem>();
+	public ArrayList<OverlayItem> mOverlays = new ArrayList<OverlayItem>();
 	private ArrayList<Integer> cOverlays = new ArrayList<Integer>();
 	public ArrayList<String> pOverlays = new ArrayList<String>();
 	private Context mContext;
@@ -56,6 +56,7 @@ public class HelloItemizedOverlay extends ItemizedOverlay{
 		i.putExtra("snippet", item.getSnippet());
 		i.putExtra("path", path);
 		i.putExtra("index", ""+index);
+		
 		i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 		
 		// Set the request code to any code you like, you can identify the

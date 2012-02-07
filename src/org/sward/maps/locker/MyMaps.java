@@ -59,7 +59,7 @@ public class MyMaps extends MapActivity {
 		//End Long CLick Listener
 		
 		List<Overlay> mapOverlays = mapView.getOverlays();
-		Drawable drawable = this.getResources().getDrawable(R.drawable.pin);
+		Drawable drawable = this.getResources().getDrawable(R.drawable.androidmarker);
 		itemizedoverlay = new HelloItemizedOverlay(drawable,getApplicationContext());
 		
 		GeoPoint point = new GeoPoint(19240000,-99120000);
