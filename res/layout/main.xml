@@ -10,7 +10,7 @@
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:clickable="true"
-        android:apiKey="0ruHIUDaaGcgDBgeIOpqY00leuxiKQAKPnFzBSA"
+        android:apiKey="0ruHIUDaaGcgyEffpEC-nk0zAABH0wZ7iQ6NoZw"
     />
 
 </RelativeLayout>

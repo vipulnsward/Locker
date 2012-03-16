@@ -31,6 +31,14 @@ public class HelloItemizedOverlay extends ItemizedOverlay{
 	    IMG_COUNT++;
 	    populate();
 	}
+
+	public void addOverlay(OverlayItem overlay,String path) {
+	    mOverlays.add(overlay);
+	    cOverlays.add(new Integer(IMG_COUNT));
+	    pOverlays.add(path);
+	    IMG_COUNT++;
+	    populate();
+	}
 	
 	@Override
 	protected OverlayItem createItem(int i) {
@@ -63,8 +71,10 @@ public class HelloItemizedOverlay extends ItemizedOverlay{
 		// callback via this code
 		i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);// To allow running from a non activity
 		mContext.startActivity(i);
-	
+		
 	  return true;
 	}
+	
+	
 	
 }

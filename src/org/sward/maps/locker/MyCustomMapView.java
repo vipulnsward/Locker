@@ -57,7 +57,7 @@ public void setOnLongpressListener(MyCustomMapView.OnLongpressListener listener)
 @Override
 public boolean onTouchEvent(MotionEvent event) {
     handleLongpress(event);
-
+    
     return super.onTouchEvent(event);
 }
 

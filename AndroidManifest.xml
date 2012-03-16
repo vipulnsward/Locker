@@ -22,6 +22,7 @@
             </intent-filter>
         </activity>
         <activity android:label="Image" android:name="org.sward.maps.locker.ImageActivity"/>
+        <activity android:label="Places" android:name="org.sward.maps.locker.Places"/>
         <uses-library android:required="true" android:name="com.google.android.maps"></uses-library>
     </application>
 

@@ -1,9 +1,8 @@
 package org.sward.maps.locker;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
 
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
@@ -25,6 +24,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.*;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
@@ -43,6 +43,8 @@ public class ImageActivity extends Activity {
 	
 	private EditText text1;
 	private EditText text2;
+	private EditText text3;
+	private EditText text4;
 /** Called when the activity is first created. */
 
 	
@@ -67,7 +69,7 @@ public class ImageActivity extends Activity {
 		String pathE = extras.getString("path");
 		if(pathE!=null&&pathE.equals(""))
 			path=pathE;
-		
+		OverlayItem item=MyMaps.itemizedoverlay.mOverlays.get(index);
 		try{
 		path=MyMaps.itemizedoverlay.pOverlays.get(index);
 		
@@ -90,10 +92,56 @@ public class ImageActivity extends Activity {
 		if (value1 != null && value2 != null) {
 			text1 = (EditText) findViewById(R.id.editText1);
 			text2 = (EditText) findViewById(R.id.editText2);
+			text3 = (EditText) findViewById(R.id.editText3);
+			text4 = (EditText) findViewById(R.id.editText4);
+			
 			text1.setText(value1);
 			text2.setText(value2);
 		}
 		
+		//Check it data in DataBase
+
+        SQLiteDatabase sampleDB = null;
+        
+        try {
+        
+        sampleDB =  this.openOrCreateDatabase("Locker", MODE_PRIVATE, null);
+		
+        //filepath, snippet, title, depth, ainfo, lat, long
+        
+		Cursor c = sampleDB.rawQuery("SELECT * FROM " +
+    			" imageinfo" +
+    			" where Lat = '"+item.getPoint().getLatitudeE6()+"' and Longitude = '"+item.getPoint().getLongitudeE6()+"'", null);
+
+		//where Lat='"+lat+"' and Longitude='"+longitude+"'");
+		
+		
+    	if (c != null ) {
+    		if  (c.moveToFirst()) {
+    			String title=c.getString(c.getColumnIndex("Title"));
+    			String snippet=c.getString(c.getColumnIndex("Snippet"));
+    			String depth=c.getString(c.getColumnIndex("Depth"));
+    			String ainfo=c.getString(c.getColumnIndex("AInfo"));
+    			
+    			text1.setText(title);
+    			text2.setText(snippet);
+    			text3.setText(depth);
+    			text4.setText(ainfo);
+    			
+    			//do {
+    				//String firstName = c.getString(c.getColumnIndex("FirstName"));
+    				//int age = c.getInt(c.getColumnIndex("Age"));
+    				//results.add("" + firstName + ",Age: " + age);
+    				
+    			//}while (c.moveToNext());
+    		} 
+    	}
+		
+        }catch(Exception e){
+        	e.printStackTrace();
+        }finally{
+        	sampleDB.close();
+        }
         
         final String [] items			= new String [] {"From Camera", "From SD Card"};				
 		ArrayAdapter<String> adapter	= new ArrayAdapter<String> (this, android.R.layout.select_dialog_item,items);
@@ -209,13 +257,39 @@ public class ImageActivity extends Activity {
 			setResult(RESULT_OK, data);
 			super.finish();
 		}
-
+		
+		// filepath, snippet, title, depth, ainfo, lat, long
+		public void save(String filepath, String snippet, String title, String depth, String ainfo, String lat, String longitude){
+			
+	        SQLiteDatabase sampleDB = null;
+	        try {
+	        	sampleDB =  this.openOrCreateDatabase("Locker", MODE_PRIVATE, null);
+	        	
+	        	
+	        	//Table banava
+	        	sampleDB.execSQL("CREATE TABLE IF NOT EXISTS " +
+	        			"imageinfo" +
+	        			" (FilePath VARCHAR, Snippet VARCHAR," +
+	        			" Title VARCHAR, Depth VARCHAR, AInfo VARCHAR, Lat VARCHAR, Longitude VARCHAR);");
+	        	sampleDB.execSQL("DELETE FROM imageinfo where Lat='"+lat+"' and Longitude='"+longitude+"'");
+	        	
+	        	//Ithe Insert karaycha ahe
+	        	
+	        	sampleDB.execSQL("INSERT INTO " +
+	        			"imageinfo" +
+	        			" Values ('"+filepath+"','"+snippet+"','"+title+"','"+depth+"','"+ainfo+"','"+lat+"','"+longitude+"');");
+	        	
+	        }catch(Exception e){
+	        	Log.d("ERR", ""+e.getMessage());
+	        }
+	        
+		}
 		
 		public void doUpload(String filepath,String filename) { 
             HttpClient httpClient = new DefaultHttpClient(); 
             try { 
                     httpClient.getParams().setParameter("http.socket.timeout", new Integer(90000)); // 90 second 
-                    post = new HttpPost(new URI("http://219.91.152.192:8080/Locker_WMS/recieve.jsp")); 
+                    post = new HttpPost(new URI("http://219.91.152.130:8080/Locker_WMS/recieve.jsp")); 
                     File file = new File(filepath); 
                     Log.d(TAG,file.getName());
                     FileEntity entity; 
@@ -234,6 +308,9 @@ public class ImageActivity extends Activity {
                     post.addHeader("SNIPPET", text2.getText().toString() );
                     post.addHeader("TITLE", text1.getText().toString());
                     
+                    post.addHeader("DEPTH", text3.getText().toString() );
+                    post.addHeader("AINFO", text4.getText().toString());
+                    
                     OverlayItem item= MyMaps.itemizedoverlay.mOverlays.get(index);
                     post.addHeader("LAT",item.getPoint().getLatitudeE6()+"");
                     post.addHeader("LONG",item.getPoint().getLongitudeE6()+"");
@@ -243,6 +320,10 @@ public class ImageActivity extends Activity {
                             Log.e(TAG,"--------Error--------Response Status line code:"+response.getStatusLine()); 
                     }else { 
                             // Here every thing is fine. 
+                    		//Mag save kara localstore la
+                    		// filepath, snippet, title, depth, ainfo, lat, long
+                    		save(filepath,text2.getText().toString(),text1.getText().toString(),text3.getText().toString(), text4.getText().toString(),item.getPoint().getLatitudeE6()+"",item.getPoint().getLongitudeE6()+"");
+                    		//Save jhala ki nai?
                     } 
                     HttpEntity resEntity = response.getEntity(); 
                     if (resEntity == null) { 
