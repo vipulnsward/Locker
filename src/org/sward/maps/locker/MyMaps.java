@@ -66,23 +66,16 @@ public class MyMaps extends MapActivity {
 		Drawable drawable = this.getResources().getDrawable(R.drawable.marker2);
 		itemizedoverlay = new HelloItemizedOverlay(drawable,getApplicationContext());
 		
-		GeoPoint point = new GeoPoint(19240000,-99120000);
-		OverlayItem overlayitem = new OverlayItem(point, "Hola, Mundo!", "I'm in Mexico City!");
-		
-		itemizedoverlay.addOverlay(overlayitem);
+
 		mapOverlays.add(itemizedoverlay);
 		
-		GeoPoint point2 = new GeoPoint(35410000, 139460000);
-		OverlayItem overlayitem2 = new OverlayItem(point2, "Sekai, konichiwa!", "I'm in Japan!");
-		itemizedoverlay.addOverlay(overlayitem2);
-		
 		//Fetch All entries here from DB and set as GeoPoint
-		saver();
+		loadGeoPoints();
 		
 		
 	}
 	
-	public void saver(){
+	public void loadGeoPoints(){
 		  SQLiteDatabase sampleDB = null;
 	        
 	        try {
