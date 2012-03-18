@@ -92,9 +92,6 @@ public class MyMaps extends MapActivity {
 	    		if  (c.moveToFirst()) {
 	    			  			
 	    			do {
-	    				//String firstName = c.getString(c.getColumnIndex("FirstName"));
-	    				//int age = c.getInt(c.getColumnIndex("Age"));
-	    				//results.add("" + firstName + ",Age: " + age);
 	    				
 	    				String title=c.getString(c.getColumnIndex("Title"));
 		    			String snippet=c.getString(c.getColumnIndex("Snippet"));
@@ -123,13 +120,13 @@ public class MyMaps extends MapActivity {
 		
 	}
 	
-	//save data from adroid app on close
+	//save data from android app on close
 
 	@Override
 	protected void onPause(){
 		super.onPause();
 		//Save data here for persistance
-		
+		//Already saved. :P
 	}
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -140,7 +137,7 @@ public class MyMaps extends MapActivity {
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		//Toast.makeText(this, "Just a test", Toast.LENGTH_SHORT).show();
+		
 		Intent i=new Intent(this,Places.class);
 		startActivity(i);
 		return true;
